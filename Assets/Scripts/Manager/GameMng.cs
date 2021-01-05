@@ -198,6 +198,11 @@ public class GameMng : MonoBehaviour
     {
         switch (activity)
         {
+            case ACTIVITY.MOVE:
+                actName.text = "이동";
+                actDesc.text = "한 턴 소요";
+                actButton.onClick.AddListener(delegate { Worker.Move(); });
+                break;
             case ACTIVITY.BUILD_MINE:
                 actName.text = "광산";
                 actDesc.text = "한 턴 소요";
@@ -261,6 +266,9 @@ public class GameMng : MonoBehaviour
     // 유닛 움직일때 필요한 변수들
     public Tile NowTile = null;
     GameObject TileGams = null;
+    //범위 타일 스크립트 변수
+    [SerializeField]
+    RangeScrp RangeSc = null;
 
     [SerializeField]
     private const float fUnitSpeed = 3.0f;
@@ -276,7 +284,7 @@ public class GameMng : MonoBehaviour
      */
     public void UnitClickMove(GameObject unitGame, Unit unitscrp)
     {
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButtonDown(0))
         {
             hit = MouseLaycast();
 
@@ -292,7 +300,7 @@ public class GameMng : MonoBehaviour
 
                 TileGams = hit.collider.gameObject;
                 TileDistance = Vector2.Distance(unitGame.transform.localPosition, TileGams.transform.localPosition);                  // 타일이 눌렸을때 캐릭터와 클릭한 타일간 거리 계산
-
+                RangeSc.RangeTileReset();                                                                                             // 범위 타일 위치 초기화
                 if (!bUnitMoveCheck)
                 {
                     bUnitMoveCheck = true;
@@ -303,7 +311,7 @@ public class GameMng : MonoBehaviour
         if (bUnitMoveCheck)
         {
             NowTile._unitObj = unitscrp;    // 세팅
-            if (Vector2.Distance(unitGame.transform.localPosition, TileGams.transform.localPosition) >= 0.01f && TileDistance <= 6f)      // 캐릭터와 타일간 거리가 1.5 * a 이하일시 움직일수 있음 (거리 한칸당 1.24?정도 되드라)
+            if (Vector2.Distance(unitGame.transform.localPosition, TileGams.transform.localPosition) >= 0.01f && TileDistance <= 1.5f)      // 캐릭터와 타일간 거리가 1.5 * a 이하일시 움직일수 있음 (거리 한칸당 1.24?정도 되드라)
             {
                 unitGame.transform.localPosition = Vector2.Lerp(unitGame.transform.localPosition, GetTileCs.GetTileVec2, fUnitSpeed * Time.deltaTime);        //타일 간 부드러운 이동
                 if (unitGame.transform.localPosition.x < TileGams.transform.localPosition.x)                                                                 //가는 방향 회전 오른쪽
@@ -319,7 +327,7 @@ public class GameMng : MonoBehaviour
                     unitGame.transform.rotation = Quaternion.Euler(new Vector3(0f, 0f, 0f));                                                                 //가는 방향 회전 왼쪽
                 }
             }
-            else if (TileDistance <= 6f)                                                                                                            //남은 거리가 좁아지면 타일 위치로 자동 이동
+            else if (TileDistance <= 1.5f)                                                                                                            //남은 거리가 좁아지면 타일 위치로 자동 이동
             {
                 unitGame.transform.localPosition = GetTileCs.GetTileVec2;
                 bUnitMoveCheck = false;
